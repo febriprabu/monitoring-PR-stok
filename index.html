@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring PR Stok</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .floating-header {
+            backdrop-filter: blur(10px);
+            background: rgba(59, 130, 246, 0.95);
+        }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-full">
+    <!-- Floating Header -->
+    <header class="floating-header fixed top-4 left-4 right-4 z-50 rounded-2xl shadow-lg">
+        <div class="px-8 py-6">
+            <h1 class="text-3xl font-bold text-white text-center">MONITORING PR STOK</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            <!-- Tab Navigation -->
+            <div class="mb-8">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-2 shadow-lg border border-blue-100">
+                    <nav class="flex space-x-2">
+                        <button id="dataTab" class="tab-button active flex-1 relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 transform transition-transform duration-300 ease-out"></div>
+                            <div class="relative z-10 flex items-center justify-center py-4 px-6 text-white font-semibold text-sm tracking-wide">
+                                <svg class="w-5 h-5 mr-2 transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                DATA PR
+                            </div>
+                        </button>
+                        <button id="submitTab" class="tab-button flex-1 relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left"></div>
+                            <div class="relative z-10 flex items-center justify-center py-4 px-6 text-gray-600 group-hover:text-white font-semibold text-sm tracking-wide transition-colors duration-300">
+                                <svg class="w-5 h-5 mr-2 transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                SUBMIT DATA PR
+                            </div>
+                        </button>
+                        <button id="chartTab" class="tab-button flex-1 relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left"></div>
+                            <div class="relative z-10 flex items-center justify-center py-4 px-6 text-gray-600 group-hover:text-white font-semibold text-sm tracking-wide transition-colors duration-300">
+                                <svg class="w-5 h-5 mr-2 transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                INFOGRAFIS
+                            </div>
+                        </button>
+                        <button id="excelTab" class="tab-button flex-1 relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left"></div>
+                            <div class="relative z-10 flex items-center justify-center py-4 px-6 text-gray-600 group-hover:text-white font-semibold text-sm tracking-wide transition-colors duration-300">
+                                <svg class="w-5 h-5 mr-2 transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                DATA EXCEL PR
+                            </div>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Submit Data PR Tab -->
+            <div id="submitContent" class="tab-content" style="display: none;">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Submit Data PR Baru</h2>
+                    
+                    <!-- Option buttons -->
+                    <div class="mb-6 flex space-x-4">
+                        <button id="useEmbeddedForm" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Form Terintegrasi
+                        </button>
+                        <button id="openTallyForm" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                            Buka Form Tally
+                        </button>
+                    </div>
+
+                    <!-- Embedded Tally Form -->
+                    <div id="embeddedFormContainer">
+                        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-gray-600 mb-2">
+                                <strong>Form Tally Terintegrasi:</strong> Submit data PR langsung melalui form di bawah ini
+                            </p>
+                        </div>
+                        <div class="border rounded-lg overflow-hidden shadow-sm">
+                            <iframe 
+                                src="https://tally.so/embed/mJNYlr?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" 
+                                width="100%" 
+                                height="800" 
+                                frameborder="0" 
+                                marginheight="0" 
+                                marginwidth="0" 
+                                title="Submit Data PR">
+                            </iframe>
+                        </div>
+                    </div>
+                    
+                    <!-- Success Message -->
+                    <div id="successMessage" class="mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md" style="display: none;">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium">Form Tally berhasil dibuka di tab baru!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data PR Tab -->
+            <div id="dataContent" class="tab-content">
+                <!-- Controls -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <label for="projectFilter" class="block text-sm font-medium text-gray-700 mb-2">Filter Project</label>
+                            <select id="projectFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Semua Project</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="rigFilter" class="block text-sm font-medium text-gray-700 mb-2">Filter Rig PDSI</label>
+                            <select id="rigFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Semua Rig</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="quickSearch" class="block text-sm font-medium text-gray-700 mb-2">Pencarian Cepat</label>
+                            <input type="text" id="quickSearch" placeholder="Cari data..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-end space-x-2">
+                            <button id="resetBtn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors">
+                                Reset
+                            </button>
+                            <button id="refreshDataBtn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors">
+                                Refresh Data
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <label for="pageSize" class="text-sm font-medium text-gray-700 mr-2">Tampilkan:</label>
+                            <select id="pageSize" class="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">Semua</option>
+                            </select>
+                        </div>
+                        <div id="dataInfo" class="text-sm text-gray-600"></div>
+                    </div>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="loading" class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p class="mt-2 text-gray-600">Memuat data dari Google Sheets...</p>
+                </div>
+
+                <!-- Data Table -->
+                <div id="tableContainer" class="bg-white rounded-lg shadow-md overflow-hidden" style="display: none;">
+                    <div class="table-container">
+                        <table class="min-w-full">
+                            <thead class="bg-blue-500 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Tanggal dikirim ke Proc</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Project</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">No Memo</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">No. MR</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">No.PR</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Rig PDSI</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Judul Pekerjaan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">PR (Value)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">No PO / RO</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">PO Value</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">GR NO</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Keterangan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Dokumen PR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4 rounded-lg shadow-md" style="display: none;">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button id="prevMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Sebelumnya
+                        </button>
+                        <button id="nextMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Selanjutnya
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700" id="paginationInfo"></p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" id="paginationButtons">
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Excel PR Tab -->
+            <div id="excelContent" class="tab-content" style="display: none;">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Excel Link Card -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Akses Data Excel PR</h3>
+                        <p class="text-gray-600 mb-6">Klik tombol di bawah untuk membuka data PR</p>
+                        <a href="https://lookerstudio.google.com/embed/reporting/0f3f06c5-d227-465b-b904-65c9ba2bad6d/page/FXVeF" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Buka Data Excel PR
+                        </a>
+                        <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="font-medium text-blue-800 mb-2">Fitur Excel:</h4>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• Edit data secara real-time</li>
+                                <li>• Kolaborasi dengan tim</li>
+                                <li>• Export ke berbagai format</li>
+                                <li>• Riwayat perubahan data</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Card -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Statistik Data PR</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+                                <div>
+                                    <p class="text-sm text-blue-600 font-medium">Total PR</p>
+                                    <p class="text-2xl font-bold text-blue-800" id="totalPRCount">-</p>
+                                </div>
+                                <div class="p-3 bg-blue-100 rounded-full">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+                                <div>
+                                    <p class="text-sm text-green-600 font-medium">Total Nilai PR</p>
+                                    <p class="text-2xl font-bold text-green-800" id="totalPRValue">-</p>
+                                </div>
+                                <div class="p-3 bg-green-100 rounded-full">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-4 bg-purple-50 rounded-lg">
+                                <div>
+                                    <p class="text-sm text-purple-600 font-medium">Total Project</p>
+                                    <p class="text-2xl font-bold text-purple-800" id="totalProjectCount">-</p>
+                                </div>
+                                <div class="p-3 bg-purple-100 rounded-full">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-4 bg-orange-50 rounded-lg">
+                                <div>
+                                    <p class="text-sm text-orange-600 font-medium">Total Rig PDSI</p>
+                                    <p class="text-2xl font-bold text-orange-800" id="totalRigCount">-</p>
+                                </div>
+                                <div class="p-3 bg-orange-100 rounded-full">
+                                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="refreshStats" class="w-full mt-6 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                            Refresh Statistik
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infografis Tab -->
+            <div id="chartContent" class="tab-content" style="display: none;">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="chartProjectFilter" class="block text-sm font-medium text-gray-700 mb-2">Filter Project</label>
+                            <select id="chartProjectFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Semua Project</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="chartRigFilter" class="block text-sm font-medium text-gray-700 mb-2">Filter Rig PDSI</label>
+                            <select id="chartRigFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Semua Rig</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="chartResetBtn" class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors">
+                                Reset Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Total PR per Project</h3>
+                        <div class="chart-container">
+                            <canvas id="projectChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Total PR per Rig PDSI</h3>
+                        <div class="chart-container">
+                            <canvas id="rigChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>&copy; 2025 Monitoring PR Stok. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let pageSize = 10;
+        let projectChart = null;
+        let rigChart = null;
+
+        // Tab functionality
+        document.getElementById('dataTab').addEventListener('click', () => switchTab('data'));
+        document.getElementById('submitTab').addEventListener('click', () => switchTab('submit'));
+        document.getElementById('chartTab').addEventListener('click', () => switchTab('chart'));
+        document.getElementById('excelTab').addEventListener('click', () => switchTab('excel'));
+
+        function switchTab(tab) {
+            const tabs = ['dataTab', 'submitTab', 'chartTab', 'excelTab'];
+            const contents = ['dataContent', 'submitContent', 'chartContent', 'excelContent'];
+
+            // Reset all tabs
+            tabs.forEach(tabId => {
+                const tabElement = document.getElementById(tabId);
+                tabElement.classList.remove('active');
+                const bgElement = tabElement.querySelector('div:first-child');
+                const textElement = tabElement.querySelector('div:last-child');
+                
+                if (tabId === 'dataTab') {
+                    bgElement.classList.add('scale-x-0');
+                    bgElement.classList.remove('scale-x-100');
+                    textElement.classList.remove('text-white');
+                    textElement.classList.add('text-gray-600');
+                } else {
+                    bgElement.classList.add('scale-x-0');
+                    bgElement.classList.remove('scale-x-100');
+                    textElement.classList.remove('text-white');
+                    textElement.classList.add('text-gray-600');
+                }
+            });
+
+            // Hide all content
+            contents.forEach(contentId => {
+                document.getElementById(contentId).style.display = 'none';
+            });
+
+            // Activate selected tab
+            if (tab === 'data') {
+                const dataTab = document.getElementById('dataTab');
+                dataTab.classList.add('active');
+                const bgElement = dataTab.querySelector('div:first-child');
+                const textElement = dataTab.querySelector('div:last-child');
+                bgElement.classList.remove('scale-x-0');
+                bgElement.classList.add('scale-x-100');
+                textElement.classList.add('text-white');
+                textElement.classList.remove('text-gray-600');
+                document.getElementById('dataContent').style.display = 'block';
+            } else if (tab === 'submit') {
+                const submitTab = document.getElementById('submitTab');
+                submitTab.classList.add('active');
+                const bgElement = submitTab.querySelector('div:first-child');
+                const textElement = submitTab.querySelector('div:last-child');
+                bgElement.classList.remove('scale-x-0');
+                bgElement.classList.add('scale-x-100');
+                textElement.classList.add('text-white');
+                textElement.classList.remove('text-gray-600');
+                document.getElementById('submitContent').style.display = 'block';
+            } else if (tab === 'chart') {
+                const chartTab = document.getElementById('chartTab');
+                chartTab.classList.add('active');
+                const bgElement = chartTab.querySelector('div:first-child');
+                const textElement = chartTab.querySelector('div:last-child');
+                bgElement.classList.remove('scale-x-0');
+                bgElement.classList.add('scale-x-100');
+                textElement.classList.add('text-white');
+                textElement.classList.remove('text-gray-600');
+                document.getElementById('chartContent').style.display = 'block';
+                updateCharts();
+            } else if (tab === 'excel') {
+                const excelTab = document.getElementById('excelTab');
+                excelTab.classList.add('active');
+                const bgElement = excelTab.querySelector('div:first-child');
+                const textElement = excelTab.querySelector('div:last-child');
+                bgElement.classList.remove('scale-x-0');
+                bgElement.classList.add('scale-x-100');
+                textElement.classList.add('text-white');
+                textElement.classList.remove('text-gray-600');
+                document.getElementById('excelContent').style.display = 'block';
+                updateStatistics();
+            }
+        }
+
+        // Load data from Google Sheets
+        async function loadData() {
+            try {
+                console.log('Loading data from Google Sheets...');
+                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vRDvBrSeRkusm89GjFmAjBzyzeGFkUfT9siawBXr4K-nWqzg1jsROMlhUO6oUge1EVpEVLJFXn_eJ64/pub?gid=0&single=true&output=csv');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                console.log('CSV data received:', csvText.substring(0, 200) + '...');
+                
+                const rows = csvText.split('\n').filter(row => row.trim());
+                console.log('Total rows found:', rows.length);
+                
+                if (rows.length === 0) {
+                    throw new Error('No data found in spreadsheet');
+                }
+                
+                const headers = parseCSVRow(rows[0]).map(h => h.replace(/"/g, '').trim());
+                console.log('Headers found:', headers);
+                
+                allData = rows.slice(1).map((row, index) => {
+                    const values = parseCSVRow(row);
+                    const obj = {};
+                    headers.forEach((header, headerIndex) => {
+                        obj[header] = (values[headerIndex] || '').replace(/"/g, '').trim();
+                    });
+                    return obj;
+                }).filter(row => {
+                    // Filter out completely empty rows
+                    const hasData = Object.values(row).some(val => val && val.trim() !== '');
+                    return hasData;
+                });
+
+                console.log('Processed data:', allData.length, 'records');
+                console.log('Sample record:', allData[0]);
+
+                filteredData = [...allData];
+                populateFilters();
+                displayData();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('tableContainer').style.display = 'block';
+                document.getElementById('pagination').style.display = 'flex';
+                
+                // Show success message
+                const dataInfo = document.getElementById('dataInfo');
+                dataInfo.innerHTML = `<span class="text-green-600">✓ Data berhasil dimuat: ${allData.length} records</span>`;
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-red-600 mb-4">Error memuat data dari Google Sheets</p>
+                        <p class="text-gray-600 text-sm mb-4">Detail: ${error.message}</p>
+                        <button onclick="loadData()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Coba Lagi
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function parseCSVRow(row) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            let i = 0;
+            
+            while (i < row.length) {
+                const char = row[i];
+                
+                if (char === '"') {
+                    if (inQuotes && row[i + 1] === '"') {
+                        // Handle escaped quotes ("")
+                        current += '"';
+                        i += 2;
+                        continue;
+                    } else {
+                        // Toggle quote state
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    // End of field
+                    result.push(current);
+                    current = '';
+                    i++;
+                    continue;
+                } else {
+                    current += char;
+                }
+                i++;
+            }
+            
+            // Add the last field
+            result.push(current);
+            return result;
+        }
+
+        function populateFilters() {
+            const projects = [...new Set(allData.map(row => row.Project || '').filter(p => p))].sort();
+            const rigs = [...new Set(allData.map(row => row['Rig PDSI'] || '').filter(r => r))].sort();
+
+            populateSelect('projectFilter', projects);
+            populateSelect('rigFilter', rigs);
+            populateSelect('chartProjectFilter', projects);
+            populateSelect('chartRigFilter', rigs);
+        }
+
+        function populateSelect(selectId, options) {
+            const select = document.getElementById(selectId);
+            const currentValue = select.value;
+            select.innerHTML = select.children[0].outerHTML;
+            
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                select.appendChild(optionElement);
+            });
+            
+            if (options.includes(currentValue)) {
+                select.value = currentValue;
+            }
+        }
+
+        function applyFilters() {
+            const projectFilter = document.getElementById('projectFilter').value;
+            const rigFilter = document.getElementById('rigFilter').value;
+            const searchTerm = document.getElementById('quickSearch').value.toLowerCase();
+
+            filteredData = allData.filter(row => {
+                const matchProject = !projectFilter || (row.Project || '').includes(projectFilter);
+                const matchRig = !rigFilter || (row['Rig PDSI'] || '').includes(rigFilter);
+                const matchSearch = !searchTerm || Object.values(row).some(val => 
+                    val.toString().toLowerCase().includes(searchTerm)
+                );
+                
+                return matchProject && matchRig && matchSearch;
+            });
+
+            currentPage = 1;
+            displayData();
+        }
+
+        function displayData() {
+            const start = pageSize === 'all' ? 0 : (currentPage - 1) * parseInt(pageSize);
+            const end = pageSize === 'all' ? filteredData.length : start + parseInt(pageSize);
+            const pageData = filteredData.slice(start, end);
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            pageData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                const rowNumber = pageSize === 'all' ? index + 1 : (currentPage - 1) * parseInt(pageSize) + index + 1;
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['Tanggal dikirim ke Proc'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row.Project || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['No Memo'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['No. MR'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['No.PR'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['Rig PDSI'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['Judul Pekerjaan'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['PR (Value)'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['No PO / RO'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['PO Value'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['GR NO'] || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row.Keterangan || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${row['Dokumen PR'] || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updatePagination();
+            updateDataInfo();
+        }
+
+        function updatePagination() {
+            if (pageSize === 'all') {
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('pagination').style.display = 'flex';
+            const totalPages = Math.ceil(filteredData.length / parseInt(pageSize));
+            const paginationButtons = document.getElementById('paginationButtons');
+            
+            paginationButtons.innerHTML = '';
+
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${currentPage === 1 ? 'cursor-not-allowed opacity-50' : ''}`;
+            prevBtn.innerHTML = '‹';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayData();
+                }
+            };
+            paginationButtons.appendChild(prevBtn);
+
+            // Page numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                    i === currentPage 
+                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' 
+                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                }`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    displayData();
+                };
+                paginationButtons.appendChild(pageBtn);
+            }
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${currentPage === totalPages ? 'cursor-not-allowed opacity-50' : ''}`;
+            nextBtn.innerHTML = '›';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayData();
+                }
+            };
+            paginationButtons.appendChild(nextBtn);
+
+            // Update pagination info
+            const start = (currentPage - 1) * parseInt(pageSize) + 1;
+            const end = Math.min(currentPage * parseInt(pageSize), filteredData.length);
+            document.getElementById('paginationInfo').textContent = 
+                `Menampilkan ${start} sampai ${end} dari ${filteredData.length} data`;
+        }
+
+        function updateDataInfo() {
+            document.getElementById('dataInfo').textContent = `Total: ${filteredData.length} data`;
+        }
+
+        function updateCharts() {
+            const chartProjectFilter = document.getElementById('chartProjectFilter').value;
+            const chartRigFilter = document.getElementById('chartRigFilter').value;
+
+            let chartData = allData.filter(row => {
+                const matchProject = !chartProjectFilter || (row.Project || '').includes(chartProjectFilter);
+                const matchRig = !chartRigFilter || (row['Rig PDSI'] || '').includes(chartRigFilter);
+                return matchProject && matchRig;
+            });
+
+            updateProjectChart(chartData);
+            updateRigChart(chartData);
+        }
+
+        function updateProjectChart(data) {
+            const projectCounts = {};
+            data.forEach(row => {
+                const project = row.Project || 'Unknown';
+                const prValue = parseFloat((row['PR (Value)'] || '0').replace(/[^\d.-]/g, '')) || 0;
+                projectCounts[project] = (projectCounts[project] || 0) + prValue;
+            });
+
+            const sortedProjects = Object.entries(projectCounts)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10);
+
+            const ctx = document.getElementById('projectChart').getContext('2d');
+            
+            if (projectChart) {
+                projectChart.destroy();
+            }
+
+            projectChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedProjects.map(([project]) => project),
+                    datasets: [{
+                        label: 'Total PR Value',
+                        data: sortedProjects.map(([, value]) => value),
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('id-ID').format(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRigChart(data) {
+            const rigCounts = {};
+            data.forEach(row => {
+                const rig = row['Rig PDSI'] || 'Unknown';
+                const prValue = parseFloat((row['PR (Value)'] || '0').replace(/[^\d.-]/g, '')) || 0;
+                rigCounts[rig] = (rigCounts[rig] || 0) + prValue;
+            });
+
+            const sortedRigs = Object.entries(rigCounts)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10);
+
+            const ctx = document.getElementById('rigChart').getContext('2d');
+            
+            if (rigChart) {
+                rigChart.destroy();
+            }
+
+            rigChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedRigs.map(([rig]) => rig),
+                    datasets: [{
+                        label: 'Total PR Value',
+                        data: sortedRigs.map(([, value]) => value),
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('id-ID').format(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Event listeners
+        document.getElementById('projectFilter').addEventListener('change', applyFilters);
+        document.getElementById('rigFilter').addEventListener('change', applyFilters);
+        document.getElementById('quickSearch').addEventListener('input', applyFilters);
+        document.getElementById('pageSize').addEventListener('change', (e) => {
+            pageSize = e.target.value;
+            currentPage = 1;
+            displayData();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            document.getElementById('projectFilter').value = '';
+            document.getElementById('rigFilter').value = '';
+            document.getElementById('quickSearch').value = '';
+            filteredData = [...allData];
+            currentPage = 1;
+            displayData();
+        });
+
+        document.getElementById('chartProjectFilter').addEventListener('change', updateCharts);
+        document.getElementById('chartRigFilter').addEventListener('change', updateCharts);
+        document.getElementById('chartResetBtn').addEventListener('click', () => {
+            document.getElementById('chartProjectFilter').value = '';
+            document.getElementById('chartRigFilter').value = '';
+            updateCharts();
+        });
+
+        // Add refresh data button functionality
+        document.getElementById('refreshDataBtn').addEventListener('click', function() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('tableContainer').style.display = 'none';
+            document.getElementById('pagination').style.display = 'none';
+            loadData();
+        });
+
+        // Tally form functionality
+        document.getElementById('openTallyForm').addEventListener('click', function() {
+            // Open Tally form in new tab
+            window.open('https://tally.so/r/mJNYlr', '_blank', 'noopener,noreferrer');
+            
+            // Show success message
+            document.getElementById('successMessage').style.display = 'block';
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 3000);
+        });
+
+        document.getElementById('useEmbeddedForm').addEventListener('click', function() {
+            // Scroll to embedded form
+            document.getElementById('embeddedFormContainer').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
+
+        // Statistics functionality
+        function updateStatistics() {
+            if (allData.length === 0) return;
+            
+            const totalPR = allData.length;
+            const totalValue = allData.reduce((sum, row) => {
+                const value = parseFloat((row['PR (Value)'] || '0').replace(/[^\d.-]/g, '')) || 0;
+                return sum + value;
+            }, 0);
+            const uniqueProjects = new Set(allData.map(row => row.Project || '').filter(p => p)).size;
+            const uniqueRigs = new Set(allData.map(row => row['Rig PDSI'] || '').filter(r => r)).size;
+            
+            document.getElementById('totalPRCount').textContent = totalPR.toLocaleString('id-ID');
+            document.getElementById('totalPRValue').textContent = 'Rp ' + totalValue.toLocaleString('id-ID');
+            document.getElementById('totalProjectCount').textContent = uniqueProjects.toLocaleString('id-ID');
+            document.getElementById('totalRigCount').textContent = uniqueRigs.toLocaleString('id-ID');
+        }
+
+        document.getElementById('refreshStats').addEventListener('click', function() {
+            updateStatistics();
+        });
+
+        loadData();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990da989d60d3e44',t:'MTc2MDg0OTUwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
